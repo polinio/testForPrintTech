@@ -1,0 +1,21 @@
+# Игнорируем папки с зависимостями
+node_modules/
+.vscode/
+.idea/
+
+# Файлы среды разработки
+.DS_Store
+*.log
+npm-debug.log*
+
+# Firebase и служебные файлы
+.firebase/
+.firebaserc
+
+# Локальные настройки (если есть)
+.env
+.env.local
+
+# Автогенерируемые файлы
+dist/
+.cache/
