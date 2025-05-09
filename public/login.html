@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header_left">
+                <img src="imgs/logo.png" alt="HSPM">
+            </div>
+            <div class="header_right">
+                <a href="index.html" class="header_btn"><div class="ptext">Главная страница</div></a>
+            </div>
+        </div>
+        <main>
+            <div class="middle_test">
+                <h3>Вход в систему</h3>
+                <div class="login-container">
+                    <input type="email" id="email" class="input-field" placeholder="Email">
+                    <input type="password" id="password" class="input-field" placeholder="Пароль">
+                    <button class="modal-button" onclick="signIn()">Войти</button>
+                    <p id="error-message" style="color: red;"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        // Определяем signIn глобально, чтобы избежать ошибки "not a function"
+        function signIn() {
+            if (typeof firebase === 'undefined') {
+                document.getElementById('error-message').innerHTML = "Ошибка: Firebase SDK не загружен.";
+                console.error("Firebase SDK не загружен");
+                return;
+            }
+
+            console.log("Firebase SDK загружен успешно");
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const auth = firebase.auth();
+            const db = firebase.database();
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            if (userData.role === 'admin') {
+                                window.location.href = 'admin.html';
+                            } else if (userData.role === 'student') {
+                                window.location.href = 'index.html';
+                            } else {
+                                document.getElementById('error-message').innerHTML = "Ошибка: неизвестная роль пользователя.";
+                            }
+                        } else {
+                            document.getElementById('error-message').innerHTML = "Ошибка: пользователь не найден в базе данных.";
+                        }
+                    }).catch((error) => {
+                        document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                    });
+                })
+                .catch((error) => {
+                    document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                });
+        }
+
+        // Проверка загрузки Firebase SDK
+        if (typeof firebase === 'undefined') {
+            console.error("Firebase SDK не загружен");
+        } else {
+            console.log("Инициализация Firebase");
+            const firebaseConfig = {
+                apiKey: "AIzaSyBVer9EUntZwLFl1G-tQ2mt-X_RBsBtvqw",
+                authDomain: "print-test-app.firebaseapp.com",
+                projectId: "print-test-app",
+                storageBucket: "print-test-app.firebasestorage.app",
+                messagingSenderId: "655497975292",
+                appId: "1:655497975292:web:0fc99675a305d92656ce79",
+                measurementId: "G-6GF42KXFBJ"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+        }
+    </script>
+</body>
+</html>

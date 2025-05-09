@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель администратора</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header_left">
+                <img src="imgs/logo.png" alt="HSPM">
+            </div>
+            <div class="header_right">
+                <a href="index.html" class="header_btn"><div class="ptext">Главная страница</div></a>
+                <button class="header_btn" onclick="signOut()"><div class="ptext">Выйти</div></button>
+            </div>
+        </div>
+        <main>
+            <div class="middle_test">
+                <h3>Управление вопросами</h3>
+                <div id="questions-list"></div>
+                <h3>Добавить/Редактировать вопрос</h3>
+                <input type="text" id="question-id" class="input-field" placeholder="ID вопроса (оставьте пустым для нового)">
+                <input type="text" id="question" class="input-field" placeholder="Вопрос">
+                <input type="text" id="title" class="input-field" placeholder="Категория">
+                <input type="text" id="optionA" class="input-field" placeholder="Вариант A">
+                <input type="text" id="optionB" class="input-field" placeholder="Вариант B">
+                <input type="text" id="optionC" class="input-field" placeholder="Вариант C">
+                <input type="text" id="optionD" class="input-field" placeholder="Вариант D">
+                <input type="text" id="correctOption" class="input-field" placeholder="Правильный ответ (optionA, optionB...)">
+            </div>
+        </main>
+    </div>
+    <script>
+        // Проверка загрузки Firebase SDK
+        if (typeof firebase === 'undefined') {
+            console.error("Firebase SDK не загружен");
+        } else {
+            console.log("Firebase SDK загружен успешно");
+            const firebaseConfig = {
+                apiKey: "AIzaSyBVer9EUntZwLFl1G-tQ2mt-X_RBsBtvqw",
+                authDomain: "print-test-app.firebaseapp.com",
+                projectId: "print-test-app",
+                storageBucket: "print-test-app.firebasestorage.app",
+                messagingSenderId: "655497975292",
+                appId: "1:655497975292:web:0fc99675a305d92656ce79",
+                measurementId: "G-6GF42KXFBJ"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+
+            function signOut() {
+                auth.signOut().then(() => {
+                    console.log("Выход успешен, перенаправление на login.html");
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    console.error("Ошибка выхода:", error);
+                });
+            }
+
+            auth.onAuthStateChanged((user) => {
+                console.log("Auth state changed:", user);
+                if (!user) {
+                    console.log("No user, redirecting to login.html");
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

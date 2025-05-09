@@ -658,7 +658,33 @@ input[type=radio]:checked ~ .option {
     to {opacity:1 ;}
   }
 
-  @-webkit-keyframes fadeIn {
+@-webkit-keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}
   }
+  /* Предыдущие стили остаются без изменений */
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #c1c1c1;
+    border-radius: 5px;
+    font-family: "IBM Plex Serif", serif;
+}
+
+.modal-button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #222222;
+    border-radius: 20px;
+    background: none;
+    cursor: pointer;
+    font-family: "Press Start 2P", system-ui;
+    color: #222222;
+}
+
+.modal-button:hover {
+    background-color: #d8d8d8;
+}

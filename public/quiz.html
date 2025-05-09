@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 </head>
 <body onload="NextQuestion(0)">
     
@@ -26,6 +28,7 @@
                 <a href="about.html" class="header_btn"><div class="ptext">О проекте</div></a>
                 <a href="team.html" class="header_btn"><div class="ptext">Наша команда</div></a>
                 <a href="contact.html" class="header_btn"><div class="ptext">Обратная связь</div></a>
+                <button class="header_btn" onclick="signOut()"><div class="ptext">Выйти</div></button>
             </div>
         </div>
         <!--тест-->
@@ -159,5 +162,42 @@
         </main>
     </div>
     <script src="script.js"></script>
+    <script>
+        // Проверка загрузки Firebase SDK
+        if (typeof firebase === 'undefined') {
+            console.error("Firebase SDK не загружен");
+        } else {
+            console.log("Firebase SDK загружен успешно");
+            const firebaseConfig = {
+                apiKey: "AIzaSyBVer9EUntZwLFl1G-tQ2mt-X_RBsBtvqw",
+                authDomain: "print-test-app.firebaseapp.com",
+                projectId: "print-test-app",
+                storageBucket: "print-test-app.firebasestorage.app",
+                messagingSenderId: "655497975292",
+                appId: "1:655497975292:web:0fc99675a305d92656ce79",
+                measurementId: "G-6GF42KXFBJ"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+
+            function signOut() {
+                auth.signOut().then(() => {
+                    console.log("Выход успешен, перенаправление на login.html");
+                    window.location.href = 'login.html';
+                }).catch((error) => {
+                    console.error("Ошибка выхода:", error);
+                });
+            }
+
+            auth.onAuthStateChanged((user) => {
+                console.log("Auth state changed:", user);
+                if (!user) {
+                    console.log("No user, redirecting to login.html");
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
