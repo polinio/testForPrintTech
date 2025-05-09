@@ -11,6 +11,23 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <style>
+        .question-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .question-item button {
+            margin-left: 10px;
+        }
+        .modal-button {
+            margin: 10px 0;
+        }
+        .error-message {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -36,6 +53,8 @@
                 <input type="text" id="optionC" class="input-field" placeholder="Вариант C">
                 <input type="text" id="optionD" class="input-field" placeholder="Вариант D">
                 <input type="text" id="correctOption" class="input-field" placeholder="Правильный ответ (optionA, optionB...)">
+                <button class="modal-button" onclick="saveQuestion()">Сохранить вопрос</button>
+                <p id="error-message" class="error-message"></p>
             </div>
         </main>
     </div>
@@ -57,6 +76,7 @@
 
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
+            const db = firebase.database();
 
             function signOut() {
                 auth.signOut().then(() => {
@@ -73,7 +93,127 @@
                     console.log("No user, redirecting to login.html");
                     window.location.href = 'login.html';
                 }
+                else {
+                    loadQuestions();
+                }
             });
+
+            function loadQuestions() {
+                db.ref('questions').on('value', (snapshot) => {
+                    const questionsList = document.getElementById('questions-list');
+                    questionsList.innerHTML = '';
+                    if (snapshot.exists()) {
+                        const questions = snapshot.val();
+                        Object.keys(questions).forEach((key) => {
+                            const question = questions[key];
+                            const questionDiv = document.createElement('div');
+                            questionDiv.className = 'question-item';
+                            questionDiv.innerHTML = `
+                                <p><strong>Вопрос:</strong> ${question.question}</p>
+                                <p><strong>Категория:</strong> ${question.title}</p>
+                                <p><strong>Вариант A:</strong> ${question.optionA}</p>
+                                <p><strong>Вариант B:</strong> ${question.optionB}</p>
+                                <p><strong>Вариант C:</strong> ${question.optionC}</p>
+                                <p><strong>Вариант D:</strong> ${question.optionD}</p>
+                                <p><strong>Правильный ответ:</strong> ${question.correctOption}</p>
+                                <button onclick="editQuestion('${key}')">Редактировать</button>
+                                <button onclick="deleteQuestion('${key}')">Удалить</button>
+                            `;
+                            questionsList.appendChild(questionDiv);
+                        });
+                    } else {
+                        questionsList.innerHTML = '<p>Вопросы не найдены.</p>';
+                    }
+                });
+            }
+
+            function saveQuestion() {
+                const questionId = document.getElementById('question-id').value;
+                const question = document.getElementById('question').value;
+                const title = document.getElementById('title').value;
+                const optionA = document.getElementById('optionA').value;
+                const optionB = document.getElementById('optionB').value;
+                const optionC = document.getElementById('optionC').value;
+                const optionD = document.getElementById('optionD').value;
+                const correctOption = document.getElementById('correctOption').value;
+
+                if (!question || !title || !optionA || !optionB || !optionC || !optionD || !correctOption) {
+                    document.getElementById('error-message').innerHTML = "Все поля должны быть заполнены.";
+                    return;
+                }
+
+                const questionData = {
+                    question,
+                    title,
+                    optionA,
+                    optionB,
+                    optionC,
+                    optionD,
+                    correctOption
+                };
+
+                if (questionId) {
+                    // Обновляем существующий вопрос
+                    db.ref(`questions/${questionId}`).set(questionData)
+                        .then(() => {
+                            document.getElementById('error-message').innerHTML = "Вопрос обновлён.";
+                            clearForm();
+                        })
+                        .catch((error) => {
+                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                        });
+                } else {
+                    // Добавляем новый вопрос
+                    const newQuestionRef = db.ref('questions').push();
+                    newQuestionRef.set(questionData)
+                        .then(() => {
+                            document.getElementById('error-message').innerHTML = "Вопрос добавлен.";
+                            clearForm();
+                        })
+                        .catch((error) => {
+                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                        });
+                }
+            }
+
+            function editQuestion(questionId) {
+                db.ref(`questions/${questionId}`).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const question = snapshot.val();
+                        document.getElementById('question-id').value = questionId;
+                        document.getElementById('question').value = question.question;
+                        document.getElementById('title').value = question.title;
+                        document.getElementById('optionA').value = question.optionA;
+                        document.getElementById('optionB').value = question.optionB;
+                        document.getElementById('optionC').value = question.optionC;
+                        document.getElementById('optionD').value = question.optionD;
+                        document.getElementById('correctOption').value = question.correctOption;
+                    }
+                });
+            }
+
+            function deleteQuestion(questionId) {
+                if (confirm("Вы уверены, что хотите удалить этот вопрос?")) {
+                    db.ref(`questions/${questionId}`).remove()
+                        .then(() => {
+                            document.getElementById('error-message').innerHTML = "Вопрос удалён.";
+                        })
+                        .catch((error) => {
+                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                        });
+                }
+            }
+
+            function clearForm() {
+                document.getElementById('question-id').value = '';
+                document.getElementById('question').value = '';
+                document.getElementById('title').value = '';
+                document.getElementById('optionA').value = '';
+                document.getElementById('optionB').value = '';
+                document.getElementById('optionC').value = '';
+                document.getElementById('optionD').value = '';
+                document.getElementById('correctOption').value = '';
+            }
         }
     </script>
 </body>

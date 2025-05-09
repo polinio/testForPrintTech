@@ -11,8 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 </head>
-<body onload="NextQuestion(0)">
+<body>
     
     <div class="container">
         <!--верхняя панель-->
@@ -36,7 +37,6 @@
             <!--окно статистики-->
             <div class="modal-container" id="score-modal">
                 <div class="modal-content-container">
-    
                     <h1>Вы завершили тест!</h1>
                         <div class="grade-details">
                         <p>Электрофотография : <span id="elect"></span>/10</p>
@@ -52,12 +52,9 @@
                     </div>
                 </div>
             </div>
-
-
             <!--Окно диаграммы-->
             <div class="modal-container" id="score-graph">
                 <div class="graph-content-container">
-
                     <h1>Ваша статистика</h1>
                     <div class="graph-details">
                         <div class="graph-details">
@@ -69,12 +66,9 @@
                     </div>
                 </div>
             </div>
-
-
             <!--Окно рангов-->
             <div class="modal-container" id="score-rank">
                 <div class="rank-content-container">
-                    
                     <h1>Ваши Ранги</h1>
                     <div class="rank-details">
                         <p>Электрофотография : </p>
@@ -95,69 +89,48 @@
                     </div>
                 </div>
             </div>
-
-
     <!--контейнер с тестом-->
-    
             <div class="game-quiz-container">
-    
                 <div class="game-details-container">
                     <h1>Вопрос : <span id="question-number"></span> / 40</h1>
                 </div>
-
                 <div class="game-details-container">
                     <h1><span id="display-title"></span></h1>
                 </div>
-    
                 <div class="game-question-container">
                     <h1 id="display-question"></h1>
                 </div>
-    
                 <!--контейнер если не выбран ответ-->
                 <div class="game-options-container">
-    
                    <div class="modal-container" id="option-modal">
-    
                         <div class="modal-content-container">
                              <h1>Сначала выберите ответ</h1>
-    
                              <div class="modal-button-container">
                                 <button onclick="closeOptionModal()">Продолжить</button>
                             </div>
-    
                         </div>
-    
                    </div>
-
                     <!--контейнер с кнопками вариантами ответов-->
                     <span>
                         <input type="radio" id="option-one" name="option" class="radio" value="optionA" />
                         <label for="option-one" class="option" id="option-one-label"></label>
                     </span>
-    
-    
                     <span>
                         <input type="radio" id="option-two" name="option" class="radio" value="optionB" />
                         <label for="option-two" class="option" id="option-two-label"></label>
                     </span>
-    
-    
                     <span>
                         <input type="radio" id="option-three" name="option" class="radio" value="optionC" />
                         <label for="option-three" class="option" id="option-three-label"></label>
                     </span>
-
                     <span>
                         <input type="radio" id="option-four" name="option" class="radio" value="optionD" />
                         <label for="option-four" class="option" id="option-four-label"></label>
                     </span>
-    
                 </div>
-    
                 <div class="next-button-container">
                     <button onclick="handleNextQuestion()">Следующий вопрос</button>
                 </div>
-    
             </div>
         </main>
     </div>

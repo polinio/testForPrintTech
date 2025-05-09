@@ -1,4 +1,4 @@
-СПбГУПТД ВШПМ, 4 курс, 2024 год
+
 
 Проект по дисциплине "Физические и оптические свойства цифровой печати"
 
@@ -12,4 +12,4 @@
 HTML, CSS, JavaScript, библиотека chart.js (для отрисовки графиков)
 
 Сайт:
-[grawwe.github.io/printProject_website/](https://grawwe.github.io/printProject_website/)
+
