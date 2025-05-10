@@ -10,21 +10,29 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <style>
-        .loading {
+        .student-info-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
-            font-size: 24px;
+            margin: 20px 0;
         }
-        .container {
-            display: none;
+        .student-info-container input {
+            margin: 10px;
+            padding: 10px;
+            width: 300px;
+        }
+        .student-info-container button {
+            margin: 10px;
+            padding: 10px 20px;
+        }
+        .error-message {
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div id="loading" class="loading">Загрузка...</div>
     <div class="container" id="content">
         <!--верхняя панель-->
         <div class="header">
@@ -33,7 +41,7 @@
                 <img src="imgs/logo.png" alt="HSPM">
             </div>
             <!--правая часть панели ССЫЛКИ-->
-            <div class="header_right">
+            <div class="header_right" id="header-right">
                 <a href="materials.html" class="header_btn"><div class="ptext">Полезные материалы</div></a>
                 <a href="about.html" class="header_btn"><div class="ptext">О проекте</div></a>
                 <a href="team.html" class="header_btn"><div class="ptext">Наша команда</div></a>
@@ -42,6 +50,7 @@
             </div>
         </div>
         <!--основное поле-->
+        <main>
         <div class="middle_test">
             <h3>Тест по дисциплине 'Физические и оптические свойства цифровой печати'</h3>
             <h2>Вашему вниманию предоставляется тест, состоящий из 4 категорий: </h2>
@@ -49,11 +58,14 @@
             <h1> • Категория №2: Термографическая печать</h1>
             <h1> • Категория №3: Струйная печать</h1>
             <h1> • Категория №4: Терминология</h1>
-            <div class="freespace">
-                <a href="quiz.html" class="quiz_btn"><div class="btext">Начать тест</div></a>
+            <div class="student-info-container">
+                <input type="text" id="student-name" class="input-field" placeholder="ФИО">
+                <input type="text" id="student-group" class="input-field" placeholder="Группа">
+                <button class="modal-button" onclick="startQuiz()">Начать тест</button>
+                <p id="error-message" class="error-message"></p>
             </div>
         </div>
-        
+        </main>
         <!--нижнее поле-->
         <div class="footer">
             <p> © 2024, Шадрин Егор Михайлович. 
@@ -79,6 +91,7 @@
 
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
+            const db = firebase.database();
 
             function signOut() {
                 auth.signOut().then(() => {
@@ -95,11 +108,42 @@
                     console.log("No user, redirecting to login.html");
                     window.location.href = 'login.html';
                 } else {
-                    console.log("User authenticated, showing content");
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
+                    // Проверяем роль пользователя
+                    db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            console.log("User data:", userData);
+                            if (userData.role === 'admin') {
+                                // Добавляем кнопку "Настройки теста" для администратора
+                                const headerRight = document.getElementById('header-right');
+                                const settingsButton = document.createElement('a');
+                                settingsButton.href = 'admin.html';
+                                settingsButton.className = 'header_btn';
+                                settingsButton.innerHTML = '<div class="ptext">Настройки теста</div>';
+                                // Вставляем кнопку перед кнопкой "Выйти"
+                                headerRight.insertBefore(settingsButton, headerRight.lastElementChild);
+                            }
+                        } else {
+                            console.error("User data not found");
+                            auth.signOut();
+                            window.location.href = 'login.html';
+                        }
+                    });
                 }
             });
+
+            function startQuiz() {
+                const studentName = document.getElementById('student-name').value.trim();
+                const studentGroup = document.getElementById('student-group').value.trim();
+                if (!studentName || !studentGroup) {
+                    document.getElementById('error-message').innerHTML = "Пожалуйста, заполните все поля.";
+                    return;
+                }
+                // Передаём ФИО и группу через URL-параметры
+                const encodedName = encodeURIComponent(studentName);
+                const encodedGroup = encodeURIComponent(studentGroup);
+                window.location.href = `quiz.html?name=${encodedName}&group=${encodedGroup}`;
+            }
         }
     </script>
 </body>

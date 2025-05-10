@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Панель администратора</title>
+    <title>Настройки теста</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,13 +12,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <style>
-        .question-item {
+        .question-item, .result-item {
             margin: 10px 0;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-        .question-item button {
+        .question-item button, .result-item button {
             margin-left: 10px;
         }
         .modal-button {
@@ -26,6 +26,30 @@
         }
         .error-message {
             color: red;
+        }
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .tab-button.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
@@ -37,24 +61,35 @@
             </div>
             <div class="header_right">
                 <a href="index.html" class="header_btn"><div class="ptext">Главная страница</div></a>
+                <a href="admin.html" class="header_btn"><div class="ptext">Настройки теста</div></a>
                 <button class="header_btn" onclick="signOut()"><div class="ptext">Выйти</div></button>
             </div>
         </div>
         <main>
+            <div class="tab-container">
+                <button class="tab-button active" onclick="showTab('edit-test')">Редактирование теста</button>
+                <button class="tab-button" onclick="showTab('test-results')">Результаты теста</button>
+            </div>
             <div class="middle_test">
-                <h3>Управление вопросами</h3>
-                <div id="questions-list"></div>
-                <h3>Добавить/Редактировать вопрос</h3>
-                <input type="text" id="question-id" class="input-field" placeholder="ID вопроса (оставьте пустым для нового)">
-                <input type="text" id="question" class="input-field" placeholder="Вопрос">
-                <input type="text" id="title" class="input-field" placeholder="Категория">
-                <input type="text" id="optionA" class="input-field" placeholder="Вариант A">
-                <input type="text" id="optionB" class="input-field" placeholder="Вариант B">
-                <input type="text" id="optionC" class="input-field" placeholder="Вариант C">
-                <input type="text" id="optionD" class="input-field" placeholder="Вариант D">
-                <input type="text" id="correctOption" class="input-field" placeholder="Правильный ответ (optionA, optionB...)">
-                <button class="modal-button" onclick="saveQuestion()">Сохранить вопрос</button>
-                <p id="error-message" class="error-message"></p>
+                <div id="edit-test" class="tab-content active">
+                    <h3>Управление вопросами</h3>
+                    <h3>Добавить/Редактировать вопрос</h3>
+                    <input type="text" id="question-id" class="input-field" placeholder="ID вопроса (оставьте пустым для нового)">
+                    <input type="text" id="question" class="input-field" placeholder="Вопрос">
+                    <input type="text" id="title" class="input-field" placeholder="Категория">
+                    <input type="text" id="optionA" class="input-field" placeholder="Вариант A">
+                    <input type="text" id="optionB" class="input-field" placeholder="Вариант B">
+                    <input type="text" id="optionC" class="input-field" placeholder="Вариант C">
+                    <input type="text" id="optionD" class="input-field" placeholder="Вариант D">
+                    <input type="text" id="correctOption" class="input-field" placeholder="Правильный ответ (optionA, optionB...)">
+                    <button class="modal-button" onclick="saveQuestion()">Сохранить вопрос</button>
+                    <p id="error-message" class="error-message"></p>
+                    <div id="questions-list"></div>
+                </div>
+                <div id="test-results" class="tab-content">
+                    <h3>Результаты студентов</h3>
+                    <div id="results-list"></div>
+                </div>
             </div>
         </main>
     </div>
@@ -94,9 +129,37 @@
                     window.location.href = 'login.html';
                 }
                 else {
-                    loadQuestions();
+                   // Проверяем роль пользователя
+                   db.ref('users/' + user.uid).once('value').then((snapshot) => {
+                        if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            console.log("User data:", userData);
+                            if (userData.role !== 'admin') {
+                                console.log("User is not admin, redirecting to index.html");
+                                window.location.href = 'index.html';
+                            } else {
+                                loadQuestions();
+                                loadResults();
+                            }
+                        } else {
+                            console.error("User data not found");
+                            auth.signOut();
+                            window.location.href = 'login.html';
+                        }
+                    });
                 }
             });
+
+            function showTab(tabId) {
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.add('active');
+                document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
+            }
 
             function loadQuestions() {
                 db.ref('questions').on('value', (snapshot) => {
@@ -125,6 +188,49 @@
                         questionsList.innerHTML = '<p>Вопросы не найдены.</p>';
                     }
                 });
+            }
+
+            function loadResults() {
+                db.ref('test_results').on('value', (snapshot) => {
+                    const resultsList = document.getElementById('results-list');
+                    resultsList.innerHTML = '';
+                    if (snapshot.exists()) {
+                        const results = snapshot.val();
+                        Object.keys(results).forEach((key) => {
+                            const result = results[key];
+                            const resultDiv = document.createElement('div');
+                            resultDiv.className = 'result-item';
+                            resultDiv.innerHTML = `
+                                <p><strong>ФИО:</strong> ${result.studentName}</p>
+                                <p><strong>Группа:</strong> ${result.studentGroup}</p>
+                                <p><strong>Электрофотография:</strong> ${result.elScore}/10</p>
+                                <p><strong>Термографическая печать:</strong> ${result.tpScore}/10</p>
+                                <p><strong>Струйная печать:</strong> ${result.stScore}/10</p>
+                                <p><strong>Терминология:</strong> ${result.teScore}/10</p>
+                                <p><strong>Правильных ответов:</strong> ${result.playerScore}</p>
+                                <p><strong>Ошибок:</strong> ${result.wrongAttempt}</p>
+                                <p><strong>Точность:</strong> ${result.gradePercentage}%</p>
+                                <p><strong>Дата:</strong> ${new Date(result.timestamp).toLocaleString('ru-RU')}</p>
+                                <button onclick="deleteResult('${key}')">Удалить</button>
+                            `;
+                            resultsList.appendChild(resultDiv);
+                        });
+                    } else {
+                        resultsList.innerHTML = '<p>Результаты не найдены.</p>';
+                    }
+                });
+            }
+
+            function deleteResult(resultId) {
+                if (confirm("Вы уверены, что хотите удалить этот результат?")) {
+                    db.ref(`test_results/${resultId}`).remove()
+                        .then(() => {
+                            document.getElementById('error-message').innerHTML = "Результат удалён.";
+                        })
+                        .catch((error) => {
+                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                        });
+                }
             }
 
             function saveQuestion() {

@@ -85,7 +85,9 @@
                         <span id="remarks_te"></span>
                     </div>
                     <div class="modal-button-container">
-                        <a href="quiz.html"><button onclick="closeGameStats();closeGameGraph();closeGameRank();restart()">Начать заново</button></a>
+                        <a href="index.html"><button onclick="closeGameStats();
+                        closeGameGraph();closeGameRank();restart()">
+                        Начать заново</button></a>
                     </div>
                 </div>
             </div>
@@ -168,6 +170,18 @@
                 if (!user) {
                     console.log("No user, redirecting to login.html");
                     window.location.href = 'login.html';
+                } else {
+                    // Получаем ФИО и группу из URL-параметров
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const studentName = urlParams.get('name');
+                    const studentGroup = urlParams.get('group');
+                    if (!studentName || !studentGroup) {
+                        console.error("ФИО или группа не указаны, перенаправление на index.html");
+                        window.location.href = 'index.html';
+                    }
+                    // Сохраняем данные в глобальные переменные
+                    window.studentName = decodeURIComponent(studentName);
+                    window.studentGroup = decodeURIComponent(studentGroup);
                 }
             });
         }

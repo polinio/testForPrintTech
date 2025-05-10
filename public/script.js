@@ -450,7 +450,6 @@ function handleQuestions() {
     }
 }
 
-
 let questionNumber = 1; // Текущий вопрос
 let playerScore = 0;  // Текущий суммарный счёт
 let elScore = 0; // Счёт по электрофотографии
@@ -471,7 +470,6 @@ function NextQuestion(index) {
     document.getElementById("option-three-label").innerHTML = currentQuestion.optionC;
     document.getElementById("option-four-label").innerHTML = currentQuestion.optionD;
 }
-
 
 function checkForAnswer() {
     const currentQuestion = shuffledQuestions[indexNumber]; // Текущий вопрос
@@ -521,8 +519,6 @@ function checkForAnswer() {
     });
 }
 
-
-
 // Вызов следующего вопроса
 function handleNextQuestion() {
     checkForAnswer(); // Проверяем, выбран ли ответ
@@ -565,6 +561,34 @@ function handleEndGameStats() {
     document.getElementById('stry').innerHTML = stScore;
     document.getElementById('term').innerHTML = teScore;
     document.getElementById('score-modal').style.display = "flex";
+
+    // Сохраняем результаты в базе данных
+    saveTestResult(playerGrade);
+}
+
+// Сохраняет результаты теста в Firebase
+function saveTestResult(playerGrade) {
+    const db = firebase.database();
+    const resultData = {
+        studentName: window.studentName,
+        studentGroup: window.studentGroup,
+        elScore: elScore,
+        tpScore: tpScore,
+        stScore: stScore,
+        teScore: teScore,
+        playerScore: playerScore,
+        wrongAttempt: wrongAttempt,
+        gradePercentage: parseFloat(playerGrade),
+        timestamp: new Date().toISOString()
+    };
+    const newResultRef = db.ref('test_results').push();
+    newResultRef.set(resultData)
+        .then(() => {
+            console.log("Результаты теста сохранены");
+        })
+        .catch((error) => {
+            console.error("Ошибка сохранения результатов:", error);
+        });
 }
 
 // Создаёт диаграмму результатов
@@ -713,8 +737,8 @@ function restart() {
     stScore = 0;
     teScore = 0;
     shuffledQuestions = [];
-    handleQuestions();
-    NextQuestion(indexNumber);
+    // handleQuestions();
+    // NextQuestion(indexNumber);
 }
 
 // Функция для закрытия окна с предупреждением
