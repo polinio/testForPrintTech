@@ -39,10 +39,10 @@
                 <div class="modal-content-container">
                     <h1>Вы завершили тест!</h1>
                         <div class="grade-details">
-                        <p>Электрофотография : <span id="elect"></span>/10</p>
-                        <p>Термографическая печать : <span id="termo"></span>/10</p>
-                        <p>Струйная печать : <span id="stry"></span>/10</p>
-                        <p>Терминология : <span id="term"></span>/10</p>
+                        <p>Электрофотография : <span id="elect"></span>/<span id="elect-max"></span></p>
+                        <p>Термографическая печать : <span id="termo"></span>/<span id="termo-max"></span></p>
+                        <p>Струйная печать : <span id="stry"></span>/<span id="stry-max"></span></p>
+                        <p>Терминология : <span id="term"></span>/<span id="term-max"></span></p>
                         <p>Ошибок : <span id="wrong-answers"></span></p>
                         <p>Итого правильных ответов : <span id="right-answers"></span></p>
                         <p>Точность ответов : <span id="grade-percentage"></span>%</p>
@@ -94,7 +94,7 @@
     <!--контейнер с тестом-->
             <div class="game-quiz-container">
                 <div class="game-details-container">
-                    <h1>Вопрос : <span id="question-number"></span> / 40</h1>
+                    <h1>Вопрос : <span id="question-number"></span> / <span id="total-questions"></span></h1>
                 </div>
                 <div class="game-details-container">
                     <h1><span id="display-title"></span></h1>

@@ -420,6 +420,13 @@ if (typeof firebase === 'undefined') {
 
 let questions = []; // Будет заполнен данными из Firebase
 let shuffledQuestions = []; // Массив для перемешанных вопросов
+let totalQuestions = 0; // Общее количество вопросов
+let categoryCounts = {
+    'Электрофотография': 0,
+    'Термографическая печать': 0,
+    'Струйная печать': 0,
+    'Терминология': 0
+}; // Количество вопросов по категориям
 
 function loadQuestions() {
     const db = firebase.database();
@@ -428,7 +435,15 @@ function loadQuestions() {
             const data = snapshot.val();
             // Преобразуем объект в массив
             questions = Object.values(data);
-            console.log("Вопросы загружены из Firebase:", questions.length);
+            totalQuestions = questions.length; // Сохраняем общее количество вопросов
+            console.log("Вопросы загружены из Firebase:", totalQuestions);
+            // Подсчитываем количество вопросов по категориям
+            questions.forEach(question => {
+                if (categoryCounts.hasOwnProperty(question.title)) {
+                    categoryCounts[question.title]++;
+                }
+            });
+            console.log("Вопросов по категориям:", categoryCounts);
             handleQuestions();
             NextQuestion(0); // Начинаем тест
         } else {
@@ -463,6 +478,7 @@ let indexNumber = 0; // Индекс текущего вопроса
 function NextQuestion(index) {
     const currentQuestion = shuffledQuestions[index];
     document.getElementById("question-number").innerHTML = questionNumber;
+    document.getElementById("total-questions").innerHTML = totalQuestions;
     document.getElementById("display-title").innerHTML = currentQuestion.title;
     document.getElementById("display-question").innerHTML = currentQuestion.question;
     document.getElementById("option-one-label").innerHTML = currentQuestion.optionA;
@@ -486,7 +502,8 @@ function checkForAnswer() {
     });
 
     // Проверяем, выбран ли какой-либо ответ
-    if (options[0].checked === false && options[1].checked === false && options[2].checked === false && options[3].checked === false) {
+    if (options[0].checked === false && options[1].checked === false && 
+        options[2].checked === false && options[3].checked === false) {
         document.getElementById('option-modal').style.display = "flex";
     }
 
@@ -507,14 +524,14 @@ function checkForAnswer() {
             // Задержка для обновления номера вопроса
             setTimeout(() => {
                 questionNumber++;
-            }, 700);
+            }, 500);
         } else if (option.checked && option.value !== currentQuestionAnswer) {
             wrongAttempt++; // Увеличиваем количество ошибок
             indexNumber++;
             // Задержка для обновления номера вопроса
             setTimeout(() => {
                 questionNumber++;
-            }, 700);
+            }, 500);
         }
     });
 }
@@ -531,7 +548,7 @@ function handleNextQuestion() {
             handleEndGameStats(); // Завершаем тест
         }
         resetOptionBackground();
-    }, 700);
+    }, 500);
 }
 
 // Сбрасывает цвет фона вариантов ответа
@@ -560,6 +577,11 @@ function handleEndGameStats() {
     document.getElementById('termo').innerHTML = tpScore;
     document.getElementById('stry').innerHTML = stScore;
     document.getElementById('term').innerHTML = teScore;
+    // Устанавливаем максимальные баллы по категориям
+    document.getElementById('elect-max').innerHTML = categoryCounts['Электрофотография'];
+    document.getElementById('termo-max').innerHTML = categoryCounts['Термографическая печать'];
+    document.getElementById('stry-max').innerHTML = categoryCounts['Струйная печать'];
+    document.getElementById('term-max').innerHTML = categoryCounts['Терминология'];
     document.getElementById('score-modal').style.display = "flex";
 
     // Сохраняем результаты в базе данных
@@ -620,7 +642,7 @@ function handleEndGameGraph() {
                     ticks: {
                         display: false,
                         beginAtZero: true,
-                        max: 10
+                        max: Math.max(...Object.values(categoryCounts)) // Максимум по всем категориям
                     }
                 }
             }
@@ -636,57 +658,71 @@ function handleEndGameRank() {
     let remark_st = null, remarkColor_st = null, rank_st = null;
     let remark_te = null, remarkColor_te = null, rank_te = null;
 
-    if (elScore <= 3) {
+    // Рассчитываем процент правильных ответов для каждой категории
+    const elPercentage = categoryCounts['Электрофотография'] > 0 ? (elScore / 
+        categoryCounts['Электрофотография']) * 100 : 0;
+    const tpPercentage = categoryCounts['Термографическая печать'] > 0 ? (tpScore / 
+        categoryCounts['Термографическая печать']) * 100 : 0;
+    const stPercentage = categoryCounts['Струйная печать'] > 0 ? (stScore / 
+        categoryCounts['Струйная печать']) * 100 : 0;
+    const tePercentage = categoryCounts['Терминология'] > 0 ? (teScore / 
+        categoryCounts['Терминология']) * 100 : 0;
+
+    // Электрофотография
+    if (elPercentage <= 30) {
         rank_el = "Ранг C";
         remark_el = "Начало пути! Продолжай учиться, чтобы глубже понять основы электрофотографии.";
         remarkColor_el = "rgb(255, 99, 132)";
-    } else if (elScore >= 4 && elScore <= 8) {
+    } else if (elPercentage <= 80) {
         rank_el = "Ранг B";
         remark_el = "Ты на верном пути! Нужно чуть больше практики, и всё получится.";
         remarkColor_el = "#fdae61";
-    } else if (elScore >= 9) {
+    } else {
         rank_el = "Ранг A";
         remark_el = "Твои знания достойны учебника! Электрофотография для тебя — как открытая книга.";
         remarkColor_el = "rgb(75, 192, 192)";
     }
 
-    if (tpScore <= 3) {
+    // Термографическая печать
+    if (tpPercentage <= 30) {
         rank_tp = "Ранг C";
         remark_tp = "Не сдавайся! Попробуй изучить принципы термопечати еще разок.";
         remarkColor_tp = "rgb(255, 99, 132)";
-    } else if (tpScore >= 4 && tpScore <= 8) {
+    } else if (tpPercentage <= 80) {
         rank_tp = "Ранг B";
         remark_tp = "Неплохой результат! Ты почти разбираешься в термопечати, но нужно немного доработать детали.";
         remarkColor_tp = "#fdae61";
-    } else if (tpScore >= 9) {
+    } else {
         rank_tp = "Ранг A";
         remark_tp = "Мастер термографии! Твои знания впечатляют!";
         remarkColor_tp = "rgb(75, 192, 192)";
     }
 
-    if (stScore <= 3) {
+    // Струйная печать
+    if (stPercentage <= 30) {
         rank_st = "Ранг C";
         remark_st = "Первые шаги в струйной печати сделаны, но впереди ещё много открытий.";
         remarkColor_st = "rgb(255, 99, 132)";
-    } else if (stScore >= 4 && stScore <= 8) {
+    } else if (stPercentage <= 80) {
         rank_st = "Ранг B";
         remark_st = "Отличный прогресс! Ты уже неплохо понимаешь устройство струйной печати.";
         remarkColor_st = "#fdae61";
-    } else if (stScore >= 9) {
+    } else {
         rank_st = "Ранг A";
         remark_st = "Эксперт по струйной печати! Твои знания на высоте.";
         remarkColor_st = "rgb(75, 192, 192)";
     }
 
-    if (teScore <= 3) {
+    // Терминология
+    if (tePercentage <= 30) {
         rank_te = "Ранг C";
         remark_te = "Терминология пока сложна, но не сдавайся!";
         remarkColor_te = "rgb(255, 99, 132)";
-    } else if (teScore >= 4 && teScore <= 8) {
+    } else if (tePercentage <= 80) {
         rank_te = "Ранг B";
         remark_te = "Продолжай изучать! Ты близок к тому, чтобы свободно владеть терминами.";
         remarkColor_te = "#fdae61";
-    } else if (teScore >= 9) {
+    } else {
         rank_te = "Ранг A";
         remark_te = "Терминологический гуру! Ты точно знаешь, о чём говоришь.";
         remarkColor_te = "rgb(75, 192, 192)";

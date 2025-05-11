@@ -51,6 +51,16 @@
         .tab-content.active {
             display: block;
         }
+        #questions-stats {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #questions-stats p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +83,7 @@
             <div class="middle_test">
                 <div id="edit-test" class="tab-content active">
                     <h3>Управление вопросами</h3>
+                    <div id="questions-stats"></div>
                     <h3>Добавить/Редактировать вопрос</h3>
                     <input type="text" id="question-id" class="input-field" placeholder="ID вопроса (оставьте пустым для нового)">
                     <input type="text" id="question" class="input-field" placeholder="Вопрос">
@@ -164,9 +175,38 @@
             function loadQuestions() {
                 db.ref('questions').on('value', (snapshot) => {
                     const questionsList = document.getElementById('questions-list');
+                    const questionsStats = document.getElementById('questions-stats');
                     questionsList.innerHTML = '';
+                    questionsStats.innerHTML = '';
+                    let totalQuestions = 0;
+                    const categoryCounts = {
+                        'Электрофотография': 0,
+                        'Термографическая печать': 0,
+                        'Струйная печать': 0,
+                        'Терминология': 0
+                    };
+
                     if (snapshot.exists()) {
                         const questions = snapshot.val();
+                        totalQuestions = Object.keys(questions).length;
+
+                        // Подсчитываем вопросы по категориям
+                        Object.values(questions).forEach(question => {
+                            if (categoryCounts.hasOwnProperty(question.title)) {
+                                categoryCounts[question.title]++;
+                            }
+                        });
+
+                         // Отображаем статистику
+                         questionsStats.innerHTML = `
+                            <p><strong>Общее количество вопросов:</strong> ${totalQuestions}</p>
+                            <p><strong>Электрофотография:</strong> ${categoryCounts['Электрофотография']}</p>
+                            <p><strong>Термографическая печать:</strong> ${categoryCounts['Термографическая печать']}</p>
+                            <p><strong>Струйная печать:</strong> ${categoryCounts['Струйная печать']}</p>
+                            <p><strong>Терминология:</strong> ${categoryCounts['Терминология']}</p>
+                        `;
+
+                        // Отображаем список вопросов
                         Object.keys(questions).forEach((key) => {
                             const question = questions[key];
                             const questionDiv = document.createElement('div');
@@ -186,6 +226,7 @@
                         });
                     } else {
                         questionsList.innerHTML = '<p>Вопросы не найдены.</p>';
+                        questionsStats.innerHTML = '<p>Вопросы не найдены.</p>';
                     }
                 });
             }

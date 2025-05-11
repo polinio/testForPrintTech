@@ -121,7 +121,8 @@
                                 settingsButton.className = 'header_btn';
                                 settingsButton.innerHTML = '<div class="ptext">Настройки теста</div>';
                                 // Вставляем кнопку перед кнопкой "Выйти"
-                                headerRight.insertBefore(settingsButton, headerRight.lastElementChild);
+                                headerRight.insertBefore(settingsButton, 
+                                headerRight.lastElementChild);
                             }
                         } else {
                             console.error("User data not found");
@@ -135,11 +136,29 @@
             function startQuiz() {
                 const studentName = document.getElementById('student-name').value.trim();
                 const studentGroup = document.getElementById('student-group').value.trim();
+                const errorMessage = document.getElementById('error-message');
+
+                // Проверка на пустые поля
                 if (!studentName || !studentGroup) {
-                    document.getElementById('error-message').innerHTML = "Пожалуйста, заполните все поля.";
+                    errorMessage.innerHTML = "Пожалуйста, заполните все поля.";
                     return;
                 }
-                // Передаём ФИО и группу через URL-параметры
+
+                // Валидация ФИО: только буквы, пробелы, дефисы, апострофы
+                const nameRegex = /^[А-Яа-яЁёA-Za-z\s\-\']+$/;
+                if (!nameRegex.test(studentName)) {
+                    errorMessage.innerHTML = "ФИО должно содержать только буквы, пробелы, дефисы или апострофы.";
+                    return;
+                }
+
+                // Валидация группы: буквы, цифры, дефисы, пробелы
+                const groupRegex = /^[А-Яа-яA-Za-z0-9\s\-]+$/;
+                if (!groupRegex.test(studentGroup)) {
+                    errorMessage.innerHTML = "Группа должна содержать только буквы, цифры, дефисы или пробелы.";
+                    return;
+                }
+
+                // Если валидация пройдена, перенаправляем на quiz.html
                 const encodedName = encodeURIComponent(studentName);
                 const encodedGroup = encodeURIComponent(studentGroup);
                 window.location.href = `quiz.html?name=${encodedName}&group=${encodedGroup}`;
