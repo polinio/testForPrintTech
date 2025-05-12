@@ -24,9 +24,6 @@
         .modal-button {
             margin: 10px 0;
         }
-        .error-message {
-            color: red;
-        }
         .tab-container {
             display: flex;
             justify-content: center;
@@ -262,14 +259,24 @@
                 });
             }
 
+            function showMessage(element, message, type) {
+                element.innerHTML = message;
+                element.className = type === 'success' ? 'success-message' : 'error-message';
+                element.classList.add('fade-out');
+                setTimeout(() => {
+                    element.innerHTML = '';
+                    element.classList.remove('fade-out');
+                }, 3000);
+            }
+
             function deleteResult(resultId) {
                 if (confirm("Вы уверены, что хотите удалить этот результат?")) {
                     db.ref(`test_results/${resultId}`).remove()
                         .then(() => {
-                            document.getElementById('error-message').innerHTML = "Результат удалён.";
+                            showMessage(document.getElementById('error-message'), "Результат удалён.", 'success');
                         })
                         .catch((error) => {
-                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                            showMessage(document.getElementById('error-message'), "Ошибка: " + error.message, 'error');
                         });
                 }
             }
@@ -285,7 +292,13 @@
                 const correctOption = document.getElementById('correctOption').value;
 
                 if (!question || !title || !optionA || !optionB || !optionC || !optionD || !correctOption) {
-                    document.getElementById('error-message').innerHTML = "Все поля должны быть заполнены.";
+                    showMessage(errorMessage, "Все поля должны быть заполнены.", 'error');
+                    return;
+                }
+
+                const validOptions = ['optionA', 'optionB', 'optionC', 'optionD'];
+                if (!validOptions.includes(correctOption)) {
+                    showMessage(errorMessage, "Правильный ответ должен быть optionA, optionB, optionC или optionD.", 'error');
                     return;
                 }
 
@@ -303,22 +316,22 @@
                     // Обновляем существующий вопрос
                     db.ref(`questions/${questionId}`).set(questionData)
                         .then(() => {
-                            document.getElementById('error-message').innerHTML = "Вопрос обновлён.";
+                            showMessage(errorMessage, "Вопрос обновлён.", 'success');
                             clearForm();
                         })
                         .catch((error) => {
-                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                            showMessage(errorMessage, "Ошибка: " + error.message, 'error');
                         });
                 } else {
                     // Добавляем новый вопрос
                     const newQuestionRef = db.ref('questions').push();
                     newQuestionRef.set(questionData)
                         .then(() => {
-                            document.getElementById('error-message').innerHTML = "Вопрос добавлен.";
+                            showMessage(errorMessage, "Вопрос добавлен.", 'success');
                             clearForm();
                         })
                         .catch((error) => {
-                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                            showMessage(errorMessage, "Ошибка: " + error.message, 'error');
                         });
                 }
             }
@@ -343,10 +356,10 @@
                 if (confirm("Вы уверены, что хотите удалить этот вопрос?")) {
                     db.ref(`questions/${questionId}`).remove()
                         .then(() => {
-                            document.getElementById('error-message').innerHTML = "Вопрос удалён.";
+                            showMessage(document.getElementById('error-message'), "Вопрос удалён.", 'success');
                         })
                         .catch((error) => {
-                            document.getElementById('error-message').innerHTML = "Ошибка: " + error.message;
+                            showMessage(document.getElementById('error-message'), "Ошибка: " + error.message, 'error');
                         });
                 }
             }

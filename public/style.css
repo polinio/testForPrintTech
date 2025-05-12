@@ -688,3 +688,25 @@ input[type=radio]:checked ~ .option {
 .modal-button:hover {
     background-color: #d8d8d8;
 }
+
+.error-message {
+    color: red;
+    text-align: center;
+    opacity: 1;
+}
+
+.success-message {
+    color: green;
+    text-align: center;
+    opacity: 1;
+}
+
+.fade-out {
+    animation: fadeOut 3s forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}

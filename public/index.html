@@ -27,9 +27,6 @@
             margin: 10px;
             padding: 10px 20px;
         }
-        .error-message {
-            color: red;
-        }
     </style>
 </head>
 <body>
@@ -138,23 +135,27 @@
                 const studentGroup = document.getElementById('student-group').value.trim();
                 const errorMessage = document.getElementById('error-message');
 
+                 // Очищаем предыдущее сообщение
+                errorMessage.innerHTML = '';
+                errorMessage.classList.remove('fade-out');
+
                 // Проверка на пустые поля
                 if (!studentName || !studentGroup) {
-                    errorMessage.innerHTML = "Пожалуйста, заполните все поля.";
+                    showMessage(errorMessage, "Пожалуйста, заполните все поля.", 'error');
                     return;
                 }
 
                 // Валидация ФИО: только буквы, пробелы, дефисы, апострофы
                 const nameRegex = /^[А-Яа-яЁёA-Za-z\s\-\']+$/;
                 if (!nameRegex.test(studentName)) {
-                    errorMessage.innerHTML = "ФИО должно содержать только буквы, пробелы, дефисы или апострофы.";
+                    showMessage(errorMessage, "ФИО должно содержать только буквы, пробелы, дефисы или апострофы.", 'error');
                     return;
                 }
 
                 // Валидация группы: буквы, цифры, дефисы, пробелы
                 const groupRegex = /^[А-Яа-яA-Za-z0-9\s\-]+$/;
                 if (!groupRegex.test(studentGroup)) {
-                    errorMessage.innerHTML = "Группа должна содержать только буквы, цифры, дефисы или пробелы.";
+                    showMessage(errorMessage, "Группа должна содержать только буквы, цифры, дефисы или пробелы.", 'error');
                     return;
                 }
 
@@ -162,6 +163,17 @@
                 const encodedName = encodeURIComponent(studentName);
                 const encodedGroup = encodeURIComponent(studentGroup);
                 window.location.href = `quiz.html?name=${encodedName}&group=${encodedGroup}`;
+            }
+
+            // Функция для отображения сообщения
+            function showMessage(element, message, type) {
+                element.innerHTML = message;
+                element.className = type === 'success' ? 'success-message' : 'error-message';
+                element.classList.add('fade-out');
+                setTimeout(() => {
+                    element.innerHTML = '';
+                    element.classList.remove('fade-out');
+                }, 3000);
             }
         }
     </script>
