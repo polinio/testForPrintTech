@@ -282,14 +282,15 @@
             }
 
             function saveQuestion() {
+                const errorMessage = document.getElementById('error-message');
                 const questionId = document.getElementById('question-id').value;
-                const question = document.getElementById('question').value;
-                const title = document.getElementById('title').value;
-                const optionA = document.getElementById('optionA').value;
-                const optionB = document.getElementById('optionB').value;
-                const optionC = document.getElementById('optionC').value;
-                const optionD = document.getElementById('optionD').value;
-                const correctOption = document.getElementById('correctOption').value;
+                const question = document.getElementById('question').value.trim();
+                const title = document.getElementById('title').value.trim();
+                const optionA = document.getElementById('optionA').value.trim();
+                const optionB = document.getElementById('optionB').value.trim();
+                const optionC = document.getElementById('optionC').value.trim();
+                const optionD = document.getElementById('optionD').value.trim();
+                const correctOption = document.getElementById('correctOption').value.trim();
 
                 if (!question || !title || !optionA || !optionB || !optionC || !optionD || !correctOption) {
                     showMessage(errorMessage, "Все поля должны быть заполнены.", 'error');
